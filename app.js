@@ -1,24 +1,23 @@
-/**
- * دالة توليد رابط مشاركة الملعب باستخدام رابط GitHub Pages الفعلي الخاص بك
- * @param {string} stadiumUsername - اسم المستخدم الخاص بالملعب المخزن في Firestore
- * @returns {string} الرابط النهائي الكلي القابل للمشاركة مع الزبائن
- */
-function generateLiveStadiumLink(stadiumUsername) {
-    // تنظيف اسم المستخدم لضمان سلامة الرابط
-    const cleanUsername = stadiumUsername.trim().toLowerCase();
-    
-    // الرابط الأساسي الجديد الخاص بك على GitHub Pages الذي حصلت عليه للتو
-    const githubBaseUrl = "https://Mohammedalali7791.github.io/khomasi";
-    
-    // تركيب الرابط ليوجه الزبون مباشرة إلى صفحة الزبائن مع تمرير اسم الملعب كمُعامل (Parameter)
-    const finalShareLink = `${githubBaseUrl}/customer.html?stadium=${cleanUsername}`;
-    
-    // طباعة الرابط في وحدة التحكم للفحص البرمجي
-    console.log("تم توليد رابط المشاركة الحي بنجاح:", finalShareLink);
-    
-    return finalShareLink;
-}
+// 1. استيراد مكتبات Firebase الأساسية وقاعدة بيانات Firestore من السحابة مباشرة
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, updateDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// مثال تشغيلي للفحص:
-// console.log(generateLiveStadiumLink("stars_pitch"));
-// المخرج سيكون: https://Mohammedalali7791.github.io/khomasi/customer.html?stadium=stars_pitch
+// 2. إعدادات مشروعك الحقيقي (Hattrick) مأخوذة بدقة من صورتك
+const firebaseConfig = {
+    apiKey: "AIzaSyByQsqYZUchD3_yf2sn_otMWy2dj4eBBJI",
+    authDomain: "hattrick-1484d.firebaseapp.com",
+    projectId: "hattrick-1484d",
+    storageBucket: "hattrick-1484d.firebasestorage.app",
+    messagingSenderId: "595118670263",
+    appId: "1:595118670263:web:4c9147c7d4dbac475ea832",
+    measurementId: "G-TQYVW38THL"
+};
+
+// 3. تفعيل الاتصال البرمجي مع قاعدة البيانات
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+console.log("تم تفعيل الاتصال بنجاح بمشروع Hattrick السحابي!");
+
+// تصدير قاعدة البيانات ليتم استخدامها في واجهات الملاعب وتوليد الروابط
+export { db };
