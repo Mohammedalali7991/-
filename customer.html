@@ -1,0 +1,56 @@
+<!-- حاوية أيقونات التواصل الاجتماعي في أسفل صفحة الملعب للزبون -->
+<div id="stadiumSocialsBox" style="margin-top: 25px; padding: 15px; background: #fff; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none;">
+    <h4 style="margin-top: 0; color: #2c3e50;">تواصل مع إدارة الملعب مباشرة</h4>
+    <div id="socialButtons" style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+        <!-- سيتم ملء الأزرار برمجياً بناءً على الحسابات المتوفرة -->
+    </div>
+</div>
+
+<script>
+/**
+ * دالة برمجية لجلب حسابات الملعب وعرض أزرار التواصل المقابلة لها تلقائياً
+ */
+async function loadStadiumSocialMedia(fieldId) {
+    const fieldDoc = await db.collection("fields").doc(fieldId).get();
+    if (!fieldDoc.exists) return;
+
+    const data = fieldDoc.data();
+    const socials = data.socialMedia;
+    const container = document.getElementById('socialButtons');
+    container.innerHTML = ""; // تفريغ الحاوية
+
+    let hasSocials = false;
+
+    if (socials) {
+        // 1. حساب الواتساب
+        if (socials.whatsapp) {
+            hasSocials = true;
+            container.innerHTML += `<a href="https://wa.me/${socials.whatsapp}" target="_blank" style="text-decoration: none; color: #25D366; font-weight: bold; padding: 10px;">🟢 واتساب</a>`;
+        }
+        // 2. حساب الإنستغرام
+        if (socials.instagram) {
+            hasSocials = true;
+            container.innerHTML += `<a href="https://instagram.com/${socials.instagram}" target="_blank" style="text-decoration: none; color: #C13584; font-weight: bold; padding: 10px;">📸 إنستغرام</a>`;
+        }
+        // 3. حساب الفيسبوك
+        if (socials.facebook) {
+            hasSocials = true;
+            container.innerHTML += `<a href="${socials.facebook}" target="_blank" style="text-decoration: none; color: #1877F2; font-weight: bold; padding: 10px;">🔵 فيسبوك</a>`;
+        }
+        // 4. حساب تيك توك
+        if (socials.tiktok) {
+            hasSocials = true;
+            container.innerHTML += `<a href="https://tiktok.com/@${socials.tiktok}" target="_blank" style="text-decoration: none; color: #000000; font-weight: bold; padding: 10px;">🎵 تيك توك</a>`;
+        }
+    }
+
+    if (hasSocials) {
+        document.getElementById('stadiumSocialsBox').style.display = 'block';
+    } else {
+        document.getElementById('stadiumSocialsBox').style.display = 'none';
+    }
+}
+
+// استدعاء الدالة عند فتح الملعب لعرض حساباته
+// loadStadiumSocialMedia('field_1');
+</script>
