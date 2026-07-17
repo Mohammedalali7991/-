@@ -1,68 +1,24 @@
 /**
- * دالة حفظ بيانات التواصل الاجتماعي مع تركيب الروابط تلقائياً
- * @param {string} fieldId - معرف الملعب
- * @param {string} username - اسم المستخدم لملعبك بالتطبيق
- * @param {object} rawSocialData - كائن يحتوي على أسماء الحسابات فقط التي أدخلها المستخدم
+ * دالة توليد رابط مشاركة الملعب باستخدام رابط GitHub Pages الفعلي الخاص بك
+ * @param {string} stadiumUsername - اسم المستخدم الخاص بالملعب المخزن في Firestore
+ * @returns {string} الرابط النهائي الكلي القابل للمشاركة مع الزبائن
  */
-async function updateStadiumProfileWithAutoLinks(fieldId, username, rawSocialData) {
-    try {
-        const cleanUsername = username.trim().toLowerCase().replace(/\s+/g, '_');
-        
-        // التحقق من توافر اسم المستخدم للملعب
-        const available = await isUsernameAvailable(cleanUsername);
-        const currentDoc = await db.collection("fields").doc(fieldId).get();
-        const currentData = currentDoc.data();
-        
-        if (!available && currentData.username !== cleanUsername) {
-            return { success: false, message: "اسم المستخدم هذا محجوز بالفعل لملعب آخر!" };
-        }
-
-        // تركيب الروابط تلقائياً بناءً على الأسماء المدخلة فقط
-        let instagramLink = "";
-        if (rawSocialData.instagram) {
-            instagramLink = `https://instagram.com/${rawSocialData.instagram.trim()}`;
-        }
-
-        let facebookLink = "";
-        if (rawSocialData.facebook) {
-            facebookLink = `https://facebook.com/${rawSocialData.facebook.trim()}`;
-        }
-
-        let tiktokLink = "";
-        if (rawSocialData.tiktok) {
-            // تنظيف اسم تيك توك في حال أدخل المستخدم رمز @ تلقائياً
-            const cleanTiktok = rawSocialData.tiktok.trim().replace('@', '');
-            tiktokLink = `https://tiktok.com/@${cleanTiktok}`;
-        }
-
-        let whatsappLink = "";
-        if (rawSocialData.whatsapp) {
-            // تنظيف رقم الهاتف من أي رموز أو مسافات (مثال: +964-77000 إلى 96477000)
-            const cleanPhone = rawSocialData.whatsapp.trim().replace(/[+\-\s]/g, '');
-            whatsappLink = `https://wa.me/${cleanPhone}`;
-        }
-
-        // تحديث البيانات في Firestore بالروابط الجاهزة والكاملة
-        await db.collection("fields").doc(fieldId).update({
-            username: cleanUsername,
-            socialMedia: {
-                instagram: instagramLink,
-                facebook: facebookLink,
-                whatsapp: whatsappLink,
-                tiktok: tiktokLink
-            }
-        });
-
-        // توليد رابط المشاركة الخاص بالتطبيق
-        const shareableLink = `https://khomasi-app.web.app/stadium/${cleanUsername}`;
-
-        return { 
-            success: true, 
-            message: "تم تركيب الروابط وحفظ الملف الشخصي بنجاح!",
-            shareableLink: shareableLink
-        };
-    } catch (error) {
-        console.error("خطأ في تحديث الملف الشخصي والروابط التلقائية:", error);
-        return { success: false, message: "حدث خطأ أثناء الحفظ: " + error.message };
-    }
+function generateLiveStadiumLink(stadiumUsername) {
+    // تنظيف اسم المستخدم لضمان سلامة الرابط
+    const cleanUsername = stadiumUsername.trim().toLowerCase();
+    
+    // الرابط الأساسي الجديد الخاص بك على GitHub Pages الذي حصلت عليه للتو
+    const githubBaseUrl = "https://Mohammedalali7791.github.io/khomasi";
+    
+    // تركيب الرابط ليوجه الزبون مباشرة إلى صفحة الزبائن مع تمرير اسم الملعب كمُعامل (Parameter)
+    const finalShareLink = `${githubBaseUrl}/customer.html?stadium=${cleanUsername}`;
+    
+    // طباعة الرابط في وحدة التحكم للفحص البرمجي
+    console.log("تم توليد رابط المشاركة الحي بنجاح:", finalShareLink);
+    
+    return finalShareLink;
 }
+
+// مثال تشغيلي للفحص:
+// console.log(generateLiveStadiumLink("stars_pitch"));
+// المخرج سيكون: https://Mohammedalali7791.github.io/khomasi/customer.html?stadium=stars_pitch
