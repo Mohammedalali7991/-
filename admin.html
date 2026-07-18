@@ -1,73 +1,190 @@
-<div style="background: #fff; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: right; direction: rtl; font-family: sans-serif;">
-    <h3><i class="fa-solid fa-share-nodes" style="color: #2a5298;"></i> روابط التواصل للملعب (اسم الحساب فقط)</h3>
-    <label for="stadiumUsername">اسم مستخدم الملعب بالتطبيق:</label>
-    <input type="text" id="stadiumUsername" placeholder="مثال: baghdad_stadium" required style="width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box;">
-    
-    <input type="text" id="rawInsta" placeholder="اسم حساب الإنستغرام فقط" style="width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box;">
-    <input type="text" id="rawFb" placeholder="اسم صفحة الفيسبوك فقط" style="width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box;">
-    <input type="tel" id="rawWa" placeholder="رقم الواتساب مع رمز الدولة (مثال: 96477...)" style="width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box;">
-    <input type="text" id="rawTiktok" placeholder="اسم حساب تيك توك فقط" style="width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box;">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم صاحب الملعب - Hattrick</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; direction: rtl; }
+        .admin-container { max-width: 900px; margin: 0 auto; background: #white; }
+        .section-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        h3 { color: #2c3e50; margin-top: 0; border-bottom: 2px solid #2a5298; padding-bottom: 8px; }
+        .flex-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+        .form-control { flex: 1; min-width: 200px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #34495e; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .days-selector { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+        .day-checkbox { background: #e1e8f5; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .day-checkbox input { display: none; }
+        .day-checkbox.active { background: #2a5298; color: white; }
+        .btn-action { padding: 12px 20px; background: #2a5298; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .grid-hours { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .hour-box { padding: 12px; border-radius: 8px; text-align: center; color: white; font-weight: bold; }
+        .request-item { background: #fff5f5; border-right: 5px solid #e74c3c; padding: 15px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-approve { background: #2ecc71; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-reject { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-    <button id="saveSocialsBtn" style="width: 100%; padding: 12px; margin-top: 15px; background: #2a5298; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">حفظ وتوليد الروابط الذكية</button>
+<div class="admin-container">
+    <h2><i class="fa-solid fa-gears" style="color: #2a5298;"></i> لوحة إدارة الملعب والأسعار</h2>
 
-    <div id="shareLinkContainer" style="margin-top: 20px; padding: 15px; background: #e8f8f5; border-radius: 5px; display: none; text-align: center;">
-        <p style="color: #16a085; font-weight: bold;">رابط ملعبك الخاص جاهز للنشر!</p>
-        <input type="text" id="generatedShareLink" readonly style="width: 70%; padding: 8px; text-align: center;">
-        <button id="copyBtn" style="padding: 8px 15px; background: #16a085; color: white; border: none; border-radius: 4px; cursor: pointer;">نسخ</button>
+    <!-- 1. قسم إعدادات الأسعار والعملة وتحديد الأيام الحرة -->
+    <div class="section-card">
+        <h3><i class="fa-solid fa-money-bill-wave"></i> إعدادات الأسعار والعملة الافتراضية</h3>
+        <div class="flex-group">
+            <div class="form-control">
+                <label>اختر العملة للملعب:</label>
+                <select id="currencySelect">
+                    <option value="IQD">الدينار العراقي (د.ع)</option>
+                    <option value="USD">الدولار الأمريكي ($)</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label>السعر العام لجميع الساعات:</label>
+                <input type="number" id="generalPrice" placeholder="مثال: 30000">
+            </div>
+        </div>
+
+        <label>حدد الأيام المراد تطبيق هذا السعر عليها (اختيار حر):</label>
+        <div class="days-selector">
+            <label class="day-checkbox"><input type="checkbox" value="السبت"> السبت</label>
+            <label class="day-checkbox"><input type="checkbox" value="الأحد"> الأحد</label>
+            <label class="day-checkbox"><input type="checkbox" value="الاثنين"> الاثنين</label>
+            <label class="day-checkbox"><input type="checkbox" value="الثلاثاء"> الثلاثاء</label>
+            <label class="day-checkbox"><input type="checkbox" value="الأربعاء"> الأربعاء</label>
+            <label class="day-checkbox"><input type="checkbox" value="الخميس"> الخميس</label>
+            <label class="day-checkbox"><input type="checkbox" value="الجمعة"> الجمعة</label>
+        </div>
+        <button class="btn-action" id="btnSavePricing"><i class="fa-solid fa-floppy-disk"></i> حفظ وتطبيق الأسعار العامة</button>
+    </div>
+
+    <!-- 2. جدول الـ 24 ساعة والإلغاء اليدوي وتعديل ذروة الساعات يدوي حر -->
+    <div class="section-card">
+        <h3><i class="fa-solid fa-calendar-days"></i> جدول الساعات الـ 24 المباشر والتحكم بالذروة</h3>
+        <label>عرض وتعديل جدول يوم:</label>
+        <select id="adminDaySelect" style="margin-bottom: 20px; padding: 10px;">
+            <option value="السبت">السبت</option>
+            <option value="الأحد">الأحد</option>
+            <option value="الاثنين">الاثنين</option>
+            <option value="الثلاثاء">الثلاثاء</option>
+            <option value="الأربعاء">الأربعاء</option>
+            <option value="الخميس">الخميس</option>
+            <option value="الجمعة">الجمعة</option>
+        </select>
+
+        <div class="grid-hours" id="adminHoursGrid">
+            <!-- سيتم توليد الـ 24 ساعة مع حقول التعديل اليدوي للأسعار برمجياً هنا -->
+        </div>
+    </div>
+
+    <!-- 3. قسم إشعارات طلبات إلغاء الاشتراك المعلقة من اللاعبين -->
+    <div class="section-card">
+        <h3><i class="fa-solid fa-bell"></i> طلبات إلغاء الحجز المعلقة (إشعارات اللاعبين)</h3>
+        <div id="cancellationRequestsList">
+            <p style="text-align: center; color: #7f8c8d;">لا توجد طلبات إلغاء معلقة حالياً.</p>
+        </div>
     </div>
 </div>
 
-<!-- واجهة إدارة الأسعار بالدينار العراقي (د.ع) -->
-<div style="background: #fff; padding: 20px; margin-top: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: right; direction: rtl; font-family: sans-serif;">
-    <h3><i class="fa-solid fa-money-bill-wave" style="color: #2ecc71;"></i> إدارة أسعار الساعات (الدينار العراقي)</h3>
-    <label for="targetDay">اختر اليوم:</label>
-    <select id="targetDay" style="width: 100%; padding: 10px; margin: 10px 0;"><option value="الجمعة">الجمعة</option><option value="السبت">السبت</option><option value="الأحد">الأحد</option><option value="الاثنين">الاثنين</option><option value="الثلاثاء">الثلاثاء</option><option value="الأربعاء">الأربعاء</option><option value="الخميس">الخميس</option></select>
-
-    <label for="defaultPriceInput">السعر الافتراضي لكل الساعات (د.ع):</label>
-    <input type="number" id="defaultPriceInput" placeholder="مثال: 25000" style="width: 100%; padding: 10px; margin-10px 0;">
-    <button id="setPriceBtn" style="width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">تطبيق السعر على الـ 24 ساعة</button>
-
-    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-    <h4>تعديل ساعة معينة (أوقات الذروة)</h4>
-    <select id="targetHour" style="width: 100%; padding: 10px; margin: 10px 0;"></select>
-    <input type="number" id="customPriceInput" placeholder="مثال: 35000" style="width: 100%; padding: 10px; margin: 10px 0;">
-    <button id="updateHourBtn" style="width: 100%; padding: 12px; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">تحديث سعر هذه الساعة فقط</button>
-</div>
-
 <script type="module">
-    import { updateStadiumProfileWithAutoLinks, setInitialDayPricing, updateCustomHourPrice } from './app.js';
+    import { doc, getDoc, updateDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { db, configureStadiumPricing, handleCancellationRequest } from './app.js';
 
-    // توليد الـ 24 ساعة برمجياً
-    const hourSelect = document.getElementById('targetHour');
-    for (let h = 0; h < 24; h++) {
-        let option = document.createElement('option');
-        option.value = h; option.textContent = `الساعة ${h % 12 === 0 ? 12 : h % 12}:00 ${h >= 12 ? 'مساءً' : 'صباحاً'}`;
-        hourSelect.appendChild(option);
-    }
+    const stadiumId = "field_1";
 
-    document.getElementById('saveSocialsBtn').addEventListener('click', async () => {
-        const username = document.getElementById('stadiumUsername').value;
-        const socials = { instagram: document.getElementById('rawInsta').value, facebook: document.getElementById('rawFb').value, whatsapp: document.getElementById('rawWa').value, tiktok: document.getElementById('rawTiktok').value };
-        if(!username) return alert("ادخل اسم المستخدم!");
-        const result = await updateStadiumProfileWithAutoLinks('field_1', username, socials);
-        if(result.success) {
-            document.getElementById('generatedShareLink').value = result.shareableLink;
-            document.getElementById('shareLinkContainer').style.display = 'block';
+    // تفعيل المظهر التفاعلي لخانات اختيار الأيام الحرة
+    document.querySelectorAll('.day-checkbox input').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+            e.target.parentElement.classList.toggle('active', e.target.checked);
+        });
+    });
+
+    // حفظ الأسعار العامة للأيام المحددة
+    document.getElementById('btnSavePricing').addEventListener('click', async () => {
+        const currency = document.getElementById('currencySelect').value;
+        const price = parseInt(document.getElementById('generalPrice').value);
+        const checkedDays = Array.from(document.querySelectorAll('.day-checkbox input:checked')).map(el => el.value);
+
+        if (!price || checkedDays.length === 0) return alert("يرجى إدخال السعر واختيار يوم واحد على الأقل!");
+
+        const res = await configureStadiumPricing(stadiumId, checkedDays, price);
+        if(res.success) {
+            alert("تم حفظ وتحديث الأسعار للأيام المحددة!");
+            loadAdminHoursGrid();
         }
     });
 
-    document.getElementById('setPriceBtn').addEventListener('click', async () => {
-        const day = document.getElementById('targetDay').value;
-        const price = document.getElementById('defaultPriceInput').value;
-        if(!price) return alert("ادخل السعر!");
-        await setInitialDayPricing('field_1', day, Number(price));
-    });
+    // جلب وعرض جدول الساعات الـ 24 للأدمن مع إمكانية الإلغاء وتعديل الأسعار يدوياً
+    async function loadAdminHoursGrid() {
+        const day = document.getElementById('adminDaySelect').value;
+        const grid = document.getElementById('adminHoursGrid');
+        grid.innerHTML = "جاري التحميل...";
 
-    document.getElementById('updateHourBtn').addEventListener('click', async () => {
-        const day = document.getElementById('targetDay').value;
-        const hour = document.getElementById('targetHour').value;
-        const price = document.getElementById('customPriceInput').value;
-        if(!price) return alert("ادخل السعر الجديد!");
-        await updateCustomHourPrice('field_1', day, Number(hour), Number(price));
-    });
+        const pricingRef = doc(db, "stadiums", stadiumId, "pricing", day);
+        const snap = await getDoc(pricingRef);
+        grid.innerHTML = "";
+
+        for (let h = 0; h < 24; h++) {
+            let hourData = { price: 30000, isBooked: false, type: "" };
+            if (snap.exists() && snap.data()[`hour_${h}`]) {
+                hourData = snap.data()[`hour_${h}`];
+            }
+
+            const box = document.createElement('div');
+            box.className = "hour-box";
+            box.style.backgroundColor = hourData.isBooked ? "#e74c3c" : "#2ecc71";
+
+            const timeLabel = `${h % 12 === 0 ? 12 : h % 12}:00 ${h >= 12 ? 'مساءً' : 'صباحاً'}`;
+            
+            box.innerHTML = `
+                <div>${timeLabel}</div>
+                <div style="font-size: 12px; margin: 5px 0;">${hourData.isBooked ? 'محجوز ('+hourData.type+')' : 'متاح'}</div>
+                <input type="number" value="${hourData.price}" id="input_price_${h}" style="width:70px; text-align:center; padding:2px; font-size:12px; border-radius:4px; border:none; margin-bottom:5px;">
+                <button onclick="updateSingleHourPrice(${h}, '${day}')" style="background:#fff; color:#333; border:none; padding:3px; font-size:10px; border-radius:3px; cursor:pointer; font-weight:bold; width:100%;">تعديل حر</button>
+            `;
+
+            // إذا كانت الساعة محجوزة، نتيح للأدمن الضغط المباشر للإلغاء الفوري
+            if (hourData.isBooked) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = "إلغاء الحجز فورا";
+                cancelBtn.style.cssText = "background:#333; color:#fff; border:none; font-size:10px; margin-top:5px; padding:3px; width:100%; cursor:pointer; border-radius:3px;";
+                cancelBtn.onclick = () => forceCancelBooking(day, h);
+                box.appendChild(cancelBtn);
+            }
+
+            grid.appendChild(box);
+        }
+    }
+
+    // دالة برمجية لتعديل سعر ساعة معينة يدوياً (مثل أوقات الذروة زيادة 5000)
+    window.updateSingleHourPrice = async function(hour, day) {
+        const newPrice = parseInt(document.getElementById(`input_price_${hour}`).value);
+        const pricingRef = doc(db, "stadiums", stadiumId, "pricing", day);
+        const updateData = {};
+        updateData[`hour_${hour}.price`] = newPrice;
+        await updateDoc(pricingRef, updateData);
+        alert(`تم تعديل سعر الساعة ${hour} يدوياً إلى ${newPrice}`);
+        loadAdminHoursGrid();
+    }
+
+    // دالة برمجية للإلغاء الفوري واليدوي للحجوزات من قبل صاحب الملعب
+    window.forceCancelBooking = async function(day, hour) {
+        if (!confirm("هل أنت متأكد من إلغاء هذا الحجز بالكامل وإعادة الساعة متاحة؟")) return;
+        const pricingRef = doc(db, "stadiums", stadiumId, "pricing", day);
+        const updateData = {};
+        updateData[`hour_${hour}.isBooked`] = false;
+        updateData[`hour_${hour}.bookedBy`] = null;
+        await updateDoc(pricingRef, updateData);
+        alert("تم إلغاء الحجز وإعادة الساعة باللون الأخضر للجميع!");
+        loadAdminHoursGrid();
+    }
+
+    // استدعاء وتحديث الجدول عند تغيير خيار اليوم
+    document.getElementById('adminDaySelect').addEventListener('change', loadAdminHoursGrid);
+    loadAdminHoursGrid();
 </script>
+</body>
+</html>
