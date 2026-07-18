@@ -185,6 +185,86 @@
     // استدعاء وتحديث الجدول عند تغيير خيار اليوم
     document.getElementById('adminDaySelect').addEventListener('change', loadAdminHoursGrid);
     loadAdminHoursGrid();
+    // ==========================================
+// 5. نظام جلب وإدارة إشعارات إلغاء الحجز (الطلبات المعلقة)
+// ==========================================
+
+/**
+ * دالة برمجية لجلب كافة طلبات الإلغاء المعلقة الخاصة بهذا الملعب وعرضها
+ */
+async function loadCancellationRequests() {
+    const requestsContainer = document.getElementById('cancellationRequestsList');
+    
+    try {
+        // بناء استعلام برمي لجلب الطلبات المعلقة فقط
+        const q = query(
+            collection(db, "cancellation_requests"),
+            where("stadiumId", "==", stadiumId),
+            where("status", "==", "pending")
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
+        // إذا لم تكن هناك طلبات معلقة
+        if (querySnapshot.empty) {
+            requestsContainer.innerHTML = `<p style="text-align: center; color: #7f8c8d;">لا توجد طلبات إلغاء معلقة حالياً.</p>`;
+            return;
+        }
+        
+        requestsContainer.innerHTML = ""; // تنظيف الحاوية قبل العرض
+        
+        // الدوران حول الوثائق المجلوبة وعرضها ديناميكياً
+        querySnapshot.forEach((docSnap) => {
+            const requestData = docSnap.data();
+            const requestId = docSnap.id;
+            
+            const requestDiv = document.createElement('div');
+            requestDiv.className = "request-item";
+            requestDiv.style.cssText = "background: #fff5f5; border-right: 5px solid #e74c3c; padding: 15px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);";
+            
+            // تصميم هيكل الإشعار مع تمرير المعاملات البرمجية للأزرار
+            requestDiv.innerHTML = `
+                <div>
+                    <strong style="color: #c0392b;"><i class="fa-solid fa-exclamation-triangle"></i> طلب إلغاء حجز</strong>
+                    <div style="font-size: 13px; margin-top: 5px; color: #333;">
+                        المشترك (المعرف: ${requestData.playerId}) يرغب في إلغاء حجز ساعة رقم [ ${requestData.hourNumber} ] ليوم [ ${requestData.dayName} ].
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-approve" onclick="processCancellation('${requestId}', 'approve', '${requestData.bookingId}', '${requestData.dayName}', ${requestData.hourNumber})">موافق</button>
+                    <button class="btn-reject" onclick="processCancellation('${requestId}', 'reject', '${requestData.bookingId}', '${requestData.dayName}', ${requestData.hourNumber})">رفض</button>
+                </div>
+            `;
+            
+            requestsContainer.appendChild(requestDiv);
+        });
+    } catch (error) {
+        console.error("خطأ برمي أثناء جلب الإشعارات:", error);
+        requestsContainer.innerHTML = `<p style="color: red; text-align: center;">فشل تحميل الإشعارات.</p>`;
+    }
+}
+
+/**
+ * دالة وسيطة لربط أزرار الواجهة بالمنطق البرمجي في السحابة
+ */
+window.processCancellation = async function(requestId, action, bookingId, dayName, hourNumber) {
+    const confirmation = confirm(action === 'approve' ? "هل أنت متأكد من الموافقة على إلغاء هذا الاشتراك؟" : "هل أنت متأكد من رفض طلب الإلغاء؟");
+    if (!confirmation) return;
+    
+    // استدعاء الدالة البرمجية الأساسية من ملف app.js
+    const result = await handleCancellationRequest(requestId, action, bookingId, stadiumId, dayName, hourNumber);
+    alert(result.message);
+    
+    // إعادة تحديث الواجهة والجدول تلقائياً لرؤية التغيير الفوري
+    loadCancellationRequests();
+    if (typeof loadAdminHoursGrid === "function") {
+        loadAdminHoursGrid(); 
+    }
+}
+
+// تشغيل جلب الإشعارات تلقائياً عند فتح اللوحة
+loadCancellationRequests();
+
 </script>
 </body>
 </html>
