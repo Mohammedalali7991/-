@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - تطبيق Hattrick</title>
+    <!-- استيراد مكتبة الأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .reg-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; box-sizing: border-box; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        label { font-weight: bold; color: #34495e; display: block; margin-top: 15px; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; margin-bottom: 10px; }
+        .btn-submit { width: 100%; padding: 14px; background-color: #2a5298; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
+        .btn-submit:hover { background-color: #1e3c72; }
+        .hidden-fields { display: none; }
+        .file-label { background: #e1e8f5; color: #2a5298; padding: 10px; text-align: center; border-radius: 6px; border: 1px dashed #2a5298; cursor: pointer; display: block; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="reg-card">
+    <h2><i class="fa-solid fa-user-plus" style="color: #2a5298;"></i> إنشاء حساب جديد</h2>
+    
+    <!-- اختيار نوع الحساب -->
+    <label for="userRole">نوع الحساب:</label>
+    <select id="userRole" onchange="toggleRoleFields()">
+        <option value="" disabled selected>-- اختر نوع الحساب --</option>
+        <option value="player">لاعب (حجز ملاعب)</option>
+        <option value="owner">صاحب ملعب (إدارة ومتابعة)</option>
+    </select>
+
+    <form id="registrationForm">
+        <!-- حقول المشترك الافتراضية (تظهر للاعب) -->
+        <div id="playerFields" class="hidden-fields">
+            <label for="playerName">الاسم الكامل:</label>
+            <input type="text" id="playerName" placeholder="أدخل اسمك الثلاثي">
+
+            <label for="playerWhatsapp">رقم الواتساب (مع رمز الدولة):</label>
+            <input type="tel" id="playerWhatsapp" placeholder="مثال: 964770000000">
+        </div>
+
+        <!-- حقول صاحب الملعب المخصصة -->
+        <div id="ownerFields" class="hidden-fields">
+            <label for="stadiumName">اسم الملعب:</label>
+            <input type="text" id="stadiumName" placeholder="مثال: ملعب بغداد الدولي">
+
+            <label for="locationText">الموقع الجغرافي (نصي):</label>
+            <input type="text" id="locationText" placeholder="مثال: بغداد - الكرادة - قرب ساحة التحريات">
+
+            <label for="locationGeo">رابط الموقع على الخريطة (Google Maps):</label>
+            <input type="url" id="locationGeo" placeholder="ضع رابط الموقع الخرائطي هنا">
+
+            <label for="stadiumCurrency">العملة الافتراضية للتعامل:</label>
+            <select id="stadiumCurrency">
+                <option value="IQD">الدينار العراقي (د.ع)</option>
+                <option value="USD">الدولار الأمريكي ($)</option>
+            </select>
+
+            <label>صور الملعب:</label>
+            <label for="stadiumImages" class="file-label"><i class="fa-solid fa-cloud-arrow-up"></i> إرفع صور الملعب من الهاتف</label>
+            <input type="file" id="stadiumImages" accept="image/*" multiple style="display: none;">
+        </div>
+
+        <button type="submit" class="btn-submit">تأكيد التسجيل وبدء الاستخدام</button>
+    </form>
+</div>
+
+<script>
+    // دالة برمجية لإظهار وإخفاء الحقول ديناميكياً حسب اختيار المستخدم
+    function toggleRoleFields() {
+        const role = document.getElementById('userRole').value;
+        const playerFields = document.getElementById('playerFields');
+        const ownerFields = document.getElementById('ownerFields');
+
+        if (role === 'player') {
+            playerFields.style.display = 'block';
+            ownerFields.style.display = 'none';
+        } else if (role === 'owner') {
+            ownerFields.style.display = 'block';
+            playerFields.style.display = 'none';
+        }
+    }
+</script>
+
+<script type="module">
+    // استيراد دالة الحفظ البرمجي من ملف app.js
+    import { registerUserAccount } from './app.js';
+
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const role = document.getElementById('userRole').value;
+        if (!role) return alert("يرجى اختيار نوع الحساب أولاً!");
+
+        // توليد معرف مستخدم تلقائي مؤقت للتجربة
+        const mockUserId = "user_" + Math.floor(Math.random() * 100000);
+        let userData = { role: role };
+
+        if (role === 'player') {
+            userData.playerName = document.getElementById('playerName').value.trim();
+            userData.whatsapp = document.getElementById('playerWhatsapp').value.trim();
+            if (!userData.playerName || !userData.whatsapp) return alert("يرجى ملء كافة الحقول!");
+        } else {
+            userData.stadiumName = document.getElementById('stadiumName').value.trim();
+            userData.locationText = document.getElementById('locationText').value.trim();
+            userData.locationGeo = document.getElementById('locationGeo').value.trim();
+            userData.currency = document.getElementById('stadiumCurrency').value;
+            if (!userData.stadiumName || !userData.locationText) return alert("يرجى ملء الحقول الأساسية للملعب!");
+        }
+
+        // استدعاء الدالة البرمجية لحفظ البيانات في Firestore
+        const result = await registerUserAccount(mockUserId, userData);
+        if (result.success) {
+            alert(result.message);
+            // توجيه برمي حسب نوع الحساب
+            if (role === 'owner') {
+                window.location.href = 'admin.html'; // الذهاب للوحة التحكم
+            } else {
+                window.location.href = 'index.html'; // الذهاب لصفحة الحجز للاعب
+            }
+        } else {
+            alert("فشلت عملية التسجيل: " + result.message);
+        }
+    });
+</script>
+
+</body>
+</html>
+
