@@ -1,56 +1,54 @@
-<!-- حاوية أيقونات التواصل الاجتماعي في أسفل صفحة الملعب للزبون -->
-<div id="stadiumSocialsBox" style="margin-top: 25px; padding: 15px; background: #fff; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none;">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- حاوية أيقونات التواصل الاجتماعي الاحترافية للزبون -->
+<div id="stadiumSocialsBox" style="margin-top: 25px; padding: 15px; background: #fff; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: none; direction: rtl; font-family: sans-serif;">
     <h4 style="margin-top: 0; color: #2c3e50;">تواصل مع إدارة الملعب مباشرة</h4>
-    <div id="socialButtons" style="display: flex; justify-content: space-around; flex-wrap: wrap;">
-        <!-- سيتم ملء الأزرار برمجياً بناءً على الحسابات المتوفرة -->
-    </div>
+    <div id="socialButtons" style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; margin-top: 15px;"></div>
 </div>
 
-<script>
-/**
- * دالة برمجية لجلب حسابات الملعب وعرض أزرار التواصل المقابلة لها تلقائياً
- */
-async function loadStadiumSocialMedia(fieldId) {
-    const fieldDoc = await db.collection("fields").doc(fieldId).get();
-    if (!fieldDoc.exists) return;
+<script type="module">
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { db } from './app.js'; 
 
-    const data = fieldDoc.data();
-    const socials = data.socialMedia;
-    const container = document.getElementById('socialButtons');
-    container.innerHTML = ""; // تفريغ الحاوية
+async function loadStadiumSocialMedia(stadiumId) {
+    try {
+        const stadiumRef = doc(db, "stadiums", stadiumId);
+        const stadiumDoc = await getDoc(stadiumRef);
+        if (!stadiumDoc.exists()) return;
 
-    let hasSocials = false;
+        const data = stadiumDoc.data();
+        const socials = data.socialLinks;
+        const container = document.getElementById('socialButtons');
+        container.innerHTML = ""; 
 
-    if (socials) {
-        // 1. حساب الواتساب
-        if (socials.whatsapp) {
-            hasSocials = true;
-            container.innerHTML += `<a href="https://wa.me/${socials.whatsapp}" target="_blank" style="text-decoration: none; color: #25D366; font-weight: bold; padding: 10px;">🟢 واتساب</a>`;
-        }
-        // 2. حساب الإنستغرام
-        if (socials.instagram) {
-            hasSocials = true;
-            container.innerHTML += `<a href="https://instagram.com/${socials.instagram}" target="_blank" style="text-decoration: none; color: #C13584; font-weight: bold; padding: 10px;">📸 إنستغرام</a>`;
-        }
-        // 3. حساب الفيسبوك
-        if (socials.facebook) {
-            hasSocials = true;
-            container.innerHTML += `<a href="${socials.facebook}" target="_blank" style="text-decoration: none; color: #1877F2; font-weight: bold; padding: 10px;">🔵 فيسبوك</a>`;
-        }
-        // 4. حساب تيك توك
-        if (socials.tiktok) {
-            hasSocials = true;
-            container.innerHTML += `<a href="https://tiktok.com/@${socials.tiktok}" target="_blank" style="text-decoration: none; color: #000000; font-weight: bold; padding: 10px;">🎵 تيك توك</a>`;
-        }
-    }
+        let hasSocials = false;
+        const btnStyle = "text-decoration: none; font-weight: bold; padding: 10px 15px; border-radius: 5px; display: flex; align-items: center; gap: 8px; color: white; min-width: 110px; justify-content: center;";
 
-    if (hasSocials) {
-        document.getElementById('stadiumSocialsBox').style.display = 'block';
-    } else {
-        document.getElementById('stadiumSocialsBox').style.display = 'none';
+        if (socials) {
+            if (socials.whatsapp) {
+                hasSocials = true;
+                container.innerHTML += `<a href="${socials.whatsapp}" target="_blank" style="${btnStyle} background-color: #25D366;"><i class="fa-brands fa-whatsapp"></i> واتساب</a>`;
+            }
+            if (socials.instagram) {
+                hasSocials = true;
+                container.innerHTML += `<a href="${socials.instagram}" target="_blank" style="${btnStyle} background-color: #E1306C;"><i class="fa-brands fa-instagram"></i> إنستغرام</a>`;
+            }
+            if (socials.facebook) {
+                hasSocials = true;
+                container.innerHTML += `<a href="${socials.facebook}" target="_blank" style="${btnStyle} background-color: #1877F2;"><i class="fa-brands fa-facebook-f"></i> فيسبوك</a>`;
+            }
+            if (socials.tiktok) {
+                hasSocials = true;
+                container.innerHTML += `<a href="${socials.tiktok}" target="_blank" style="${btnStyle} background-color: #000000;"><i class="fa-brands fa-tiktok"></i> تيك توك</a>`;
+            }
+        }
+
+        document.getElementById('stadiumSocialsBox').style.display = hasSocials ? 'block' : 'none';
+    } catch (error) {
+        console.error("خطأ برمي أثناء التحميل للزبون:", error);
     }
 }
 
-// استدعاء الدالة عند فتح الملعب لعرض حساباته
-// loadStadiumSocialMedia('field_1');
+// تشغيل جلب البيانات تلقائياً للملعب الأول
+loadStadiumSocialMedia('field_1');
 </script>
